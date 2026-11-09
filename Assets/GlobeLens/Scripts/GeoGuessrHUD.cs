@@ -7,6 +7,7 @@ public sealed class GeoGuessrHUD : MonoBehaviour
     [Header("Game")]
     [SerializeField] private GeoGuessrGameManager gameManager;
     [SerializeField] private MapGuessInput mapInput;
+    [SerializeField] private PanoramaDisplay panoramaDisplay;
 
     [Header("Text")]
     [SerializeField] private TMP_Text roundText;
@@ -27,6 +28,8 @@ public sealed class GeoGuessrHUD : MonoBehaviour
     [SerializeField] private Button pauseButton;
     [SerializeField] private Button replayButton;
     [SerializeField] private TMP_Text pauseButtonText;
+
+    private int renderedRound = -1;
 
     private void OnEnable()
     {
@@ -61,6 +64,14 @@ public sealed class GeoGuessrHUD : MonoBehaviour
 
     private void Render(GeoGameSnapshot state)
     {
+        bool newRound = renderedRound != state.roundIndex;
+        if (newRound)
+        {
+            renderedRound = state.roundIndex;
+            if (mapInput != null) mapInput.ClearMarkers();
+            if (panoramaDisplay != null) panoramaDisplay.Show(state.panoramaAsset);
+        }
+
         if (roundText != null) roundText.text = state.roundCount == 0 ? "" : $"ROUND {Mathf.Min(state.roundIndex + 1, state.roundCount):00} / {state.roundCount:00}";
         if (scoreText != null) scoreText.text = $"{state.score:N0} PTS";
         if (timerText != null) timerText.text = state.phase == GeoGamePhase.Paused ? "PAUSED" : $"{Mathf.CeilToInt(state.secondsLeft):00}";
@@ -87,10 +98,13 @@ public sealed class GeoGuessrHUD : MonoBehaviour
         {
             if (ready) statusText.text = "A quick journey around the world. No controller required.";
             else if (paused) statusText.text = "Paused — take a breath, then resume.";
-            else if (playing) statusText.text = state.hasGuess ? "Pin placed. Lock in your guess." : "Look around, then tap the map to guess.";
+            else if (playing) statusText.text = state.hasGuess ? "Pin placed. Lock in your guess." : "Tap the map with your hand ray to place a pin.";
             else if (revealed) statusText.text = state.timedOut && !state.hasGuess ? "Time is up — no points this round." : $"{state.distanceKm:N0} km away · +{state.roundPoints:N0} points";
             else statusText.text = $"Journey complete · {state.score:N0} points";
         }
+
+        if (revealed && mapInput != null && state.hasAnswer)
+            mapInput.RevealAnswer(state.answerLatitude, state.answerLongitude, state.hasGuess);
 
         if (revealText != null && revealed)
         {
@@ -98,9 +112,7 @@ public sealed class GeoGuessrHUD : MonoBehaviour
             revealText.text = $"{state.revealedLocation}\n{distance}\n+{state.roundPoints:N0} points";
         }
 
-        if (revealed && mapInput != null) mapInput.enabled = false;
-        else if (playing && mapInput != null) mapInput.enabled = true;
-        if ((ready || complete) && mapInput != null) mapInput.ClearMarker();
+        if (mapInput != null) mapInput.enabled = playing;
     }
 
     private static void SetActive(GameObject target, bool value)

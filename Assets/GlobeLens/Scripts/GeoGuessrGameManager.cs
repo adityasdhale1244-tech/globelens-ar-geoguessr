@@ -26,12 +26,16 @@ public sealed class GeoGameSnapshot
     public float distanceKm;
     public int roundPoints;
     public bool timedOut;
+    public bool hasAnswer;
+    public float answerLatitude;
+    public float answerLongitude;
 }
 
+/// <summary>Round loop and scoring for seated, hands-first GeoGuessr.</summary>
 public sealed class GeoGuessrGameManager : MonoBehaviour
 {
     [SerializeField] private RoundCatalog roundCatalog;
-    [SerializeField, Min(5f)] private float secondsPerRound = 20f;
+    [SerializeField, Min(5f)] private float secondsPerRound = 30f;
 
     public event Action<GeoGameSnapshot> StateChanged;
 
@@ -72,14 +76,10 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
 
     private void Update()
     {
-        if (phase != GeoGamePhase.Playing)
-            return;
-
+        if (phase != GeoGamePhase.Playing) return;
         secondsLeft = Mathf.Max(0f, secondsLeft - Time.deltaTime);
-        if (secondsLeft <= 0f)
-            ResolveRound(true);
-        else
-            Publish();
+        if (secondsLeft <= 0f) ResolveRound(true);
+        else Publish();
     }
 
     public void StartGame()
@@ -100,8 +100,7 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
 
     public bool PlaceGuess(float latitude, float longitude)
     {
-        if (phase != GeoGamePhase.Playing ||
-            float.IsNaN(latitude) || float.IsNaN(longitude) ||
+        if (phase != GeoGamePhase.Playing || float.IsNaN(latitude) || float.IsNaN(longitude) ||
             latitude < -90f || latitude > 90f || longitude < -180f || longitude > 180f)
             return false;
 
@@ -115,11 +114,7 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
     public void SubmitGuess()
     {
         if (phase != GeoGamePhase.Playing) return;
-        if (!hasGuess)
-        {
-            Publish();
-            return;
-        }
+        if (!hasGuess) { Publish(); return; }
         ResolveRound(false);
     }
 
@@ -163,7 +158,10 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
             revealedLocation = reveal && round != null ? round.name + ", " + round.country : string.Empty,
             distanceKm = distanceKm,
             roundPoints = roundPoints,
-            timedOut = timedOut
+            timedOut = timedOut,
+            hasAnswer = reveal && round != null,
+            answerLatitude = reveal && round != null ? round.latitude : 0f,
+            answerLongitude = reveal && round != null ? round.longitude : 0f
         };
     }
 
@@ -185,7 +183,6 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
         timedOut = expired;
         roundPoints = 0;
         distanceKm = 0f;
-
         if (hasGuess)
         {
             GeoRound answer = rounds[roundIndex];
@@ -193,7 +190,6 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
             roundPoints = Mathf.RoundToInt(5000f * Mathf.Exp(-distanceKm / 1800f));
             score += roundPoints;
         }
-
         phase = GeoGamePhase.Revealed;
         Publish();
     }
@@ -209,8 +205,5 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
         return earthRadiusKm * 2f * Mathf.Atan2(Mathf.Sqrt(a), Mathf.Sqrt(1f - a));
     }
 
-    private void Publish()
-    {
-        StateChanged?.Invoke(GetSnapshot());
-    }
+    private void Publish() => StateChanged?.Invoke(GetSnapshot());
 }

@@ -1,27 +1,26 @@
-# GlobeLens Quest — Build plan
+# Competition-window build plan
 
 ## Hackathon fit
-- **Track:** Gaming. The core product is a playable guessing game, not a media viewer or productivity tool.
-- **Division:** Because this GeoGuessr concept/prototype existed in earlier work, select **Adapted / Significantly Updated** if it existed before September 24, 2026. Describe only substantial features built during the competition window. Select **New Experience** only if the project truly began within the permitted window and the event rules confirm eligibility. Do not claim a new-project division based solely on a port or visual refresh.
-- **Target:** Meta Quest, using the event-approved Unity + Meta XR SDK setup.
+- **Track:** Gaming: the core product is a playable guessing game, not a media viewer or productivity tool.
+- **Division:** Because this GeoGuessr concept/prototype existed in earlier work, select **Adapted / Significantly Updated** if it predates the competition window and the competition work is substantial. Select New Experience only if it genuinely meets the event's new-project rules.
+- **Target:** Meta Quest, using the event-approved Unity + Meta XR setup.
 
-## Competition-window changes to deliver
-1. Replace the browser-only prototype with a native Quest build.
-2. Add hand-first world-map guessing via an XR UI ray/pinch interaction; keep controller input as an optional fallback.
-3. Make the experience seated, with all controls in comfortable reach and no required room-scale movement.
-4. Add clean pause/resume, three short offline rounds, answer reveal, and replay.
-5. Use locally bundled licensed scenes; avoid API/network failure during judging.
-
-Only list these as completed in the submission after they are implemented and tested.
+## Premium update
+1. Replace the flat web mockup presentation with an immersive, stationary panorama dome using bundled, licensed location art.
+2. Rebuild the map as a large, seated-reachable world-space panel with visible graticules and coordinate labels.
+3. Add hand-ray/pinch map selection, a large guess pin, and a separate answer marker with a connecting line on reveal.
+4. Add a calm visual hierarchy: title/round/score strip, readable clue card, map action prompt, pause, reveal, and final/replay screens.
+5. Keep the 3-round session offline-capable and comfortable while seated.
 
 ## Player loop
-Start → inspect scene and clue → tap map → submit → reveal score → next round → final score/replay.
+Start → inspect scene and clue → point/pinch the map → submit → reveal answer and distance → next round → final score/replay.
 
-## Premium design direction
-Dark evergreen background, warm-white typography, lime/cyan accent, restrained map grid, one high-contrast pin, large clue text, concise controls, and subtle transitions. Avoid excessive motion and keep text stable and readable in VR.
+## Visual direction
+Dark evergreen surfaces, warm white typography, restrained lime/cyan accents, crisp map graticule, calm panoramas, one strong primary action, and only brief transitions. Avoid forced camera motion and busy effects.
 
 ## Risks and fallback
-- Hand interaction may need device-specific Meta XR Interaction SDK wiring; test on Quest early. Keep controller fallback available.
-- If a 360° scene is too costly or unavailable, use a static licensed image on a curved/world-space panel.
-- If the decorative map graphic is unclear, use a licensed map texture or simplified continent regions; preserve tap-to-guess scoring.
-- Do not depend on Google Street View/Mapillary live calls for the judged build. Check redistribution and display terms for any location imagery.
+- Exact hand UI input depends on the Meta XR SDK sample and EventSystem module used; verify on device early and retain optional controller fallback.
+- If a 360° panorama is unavailable, use a licensed static image on a curved/world-space panel.
+- If the stylized map is not sufficiently legible, substitute a licensed map texture while retaining the same tap-coordinate logic.
+- Do not depend on live street-view calls for judging; verify imagery redistribution rights.
+- This repository is code/documentation scaffold only until a Unity scene, XR rig, assets, and APK are built and tested.
