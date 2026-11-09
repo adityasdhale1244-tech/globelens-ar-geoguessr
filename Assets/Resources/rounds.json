@@ -1,0 +1,40 @@
+{
+  "rounds": [
+    {
+      "id": "kyoto",
+      "name": "Kyoto",
+      "country": "Japan",
+      "clue": "Lantern-lit lanes and wooden facades hint at an old capital in East Asia.",
+      "latitude": 35.0116,
+      "longitude": 135.7681,
+      "panoramaAsset": "KyotoPanorama",
+      "cuePrefab": "LanternCue",
+      "cueCaption": "Look for warm light and timber details",
+      "ambienceHex": "#D6A36B"
+    },
+    {
+      "id": "marrakech",
+      "name": "Marrakech",
+      "country": "Morocco",
+      "clue": "Earth-toned walls, shaded market alleys, and warm North African light.",
+      "latitude": 31.6295,
+      "longitude": -7.9811,
+      "panoramaAsset": "MarrakechPanorama",
+      "cuePrefab": "ArchCue",
+      "cueCaption": "Notice the sun-baked geometry",
+      "ambienceHex": "#E6A15D"
+    },
+    {
+      "id": "reykjavik",
+      "name": "Reykjavík",
+      "country": "Iceland",
+      "clue": "A compact northern city shaped by volcanic landscapes and the coast.",
+      "latitude": 64.1466,
+      "longitude": -21.9426,
+      "panoramaAsset": "ReykjavikPanorama",
+      "cuePrefab": "NordicRoofCue",
+      "cueCaption": "Look for the low roofline and cool coastal light",
+      "ambienceHex": "#85B9CF"
+    }
+  ]
+}
