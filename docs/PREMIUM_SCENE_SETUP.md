@@ -1,6 +1,6 @@
 # Premium seated Quest scene setup
 
-This guide upgrades the GeoGuessr prototype with an immersive panorama, a clear reachable map console, hand-ray interaction, and a polished result reveal. This repo is source scaffolding; create and wire the Unity scene as described, then test on Quest.
+This guide upgrades the GeoGuessr prototype with an immersive panorama, a clear reachable map console, hand-ray interaction, and a polished result reveal. This repo is source scaffolding; create and wire the scene as described, then test on Quest.
 
 ## 1. Comfortable scene layout
 
@@ -12,17 +12,18 @@ Suggested hierarchy:
 Main
 ├── XR Origin (Meta XR rig, from installed SDK sample)
 ├── Environment
-│   ├── PanoramaDisplay (add PanoramaDisplay.cs)
-│   ├── SeatedStage (optional decorative frame/lighting)
-│   └── Key Light
-├── GameUI (World Space Canvas, Event Camera = XR camera)
+│   ├── PanoramaDisplay
+│   ├── RoundEnvironmentController
+│   └── CueAnchor
+├── GameUI (World Space Canvas)
 │   ├── Header (brand / round / score / pause)
 │   ├── ClueCard (large clue and short instruction)
-│   ├── WorldMapPanel (Image + WorldMapGraphic)
-│   │   ├── LongitudeLatitudeLabels
-│   │   ├── GuessPin (lime ring + center dot)
-│   │   ├── AnswerPin (white/cyan marker; hidden until reveal)
-│   │   └── GuessToAnswerLine (thin Image; hidden until reveal)
+│   ├── WorldMapPanel (WorldMapGraphic + MapGuessInput)
+│   │   ├── LatitudeLongitudeLabels
+│   │   ├── PreviewPin (translucent target, raycast off)
+│   │   ├── GuessPin (lime ring, raycast off)
+│   │   ├── AnswerPin (white/cyan target, hidden until reveal)
+│   │   └── GuessToAnswerLine (Image child, raycast off)
 │   ├── SubmitButton (large, high contrast)
 │   ├── RevealPanel (answer, distance, points, next)
 │   └── FinalPanel (total, replay)
@@ -33,43 +34,32 @@ Main
     └── MapGuessInput
 ```
 
-Recommended Canvas reference size: 1600 × 900. Keep the map panel wide (about 680 × 360 reference units) so countries and pins are easy to see. Put the clue in a separate card above the map, not over the interactive area.
+Recommended Canvas reference size: 1600 × 900. Keep the map panel wide (about 680 × 360 reference units) so landforms, labels, and pins are easy to see. Put the clue in a separate card above the map.
 
-## 2. Build the visual environment
+## 2. Destination environment and 3D cues
 
-- Add `PanoramaDisplay` to a scene object. If its `Target Renderer` is empty, the script creates an inward-facing sphere and loads textures from `Assets/Resources/Panoramas/` by name.
-- Use licensed 2:1 equirectangular panoramas (e.g. 4096 × 2048 source, compressed for Quest). Keep a non-identifying fallback image assigned so a missing panorama never leaves a blank scene.
-- Keep the dome centered on the XR camera. The script follows the camera position, so it remains immersive without moving the player.
-- Add a restrained dark translucent overlay behind text, a thin lime/cyan edge, a soft ambient/key light for optional foreground geometry, and a small set of non-moving destination markers. Avoid busy particles or rapid animation that can cause discomfort.
-- For stable comfort, use a stationary horizon and no camera shake, forced rotation, zoom, or locomotion.
+- `PanoramaDisplay` creates an inward-facing panorama sphere and loads local textures from `Assets/Resources/Panoramas/`.
+- Add `RoundEnvironmentController` to an environment GameObject. Assign a key light and an anchor positioned in the comfortable seated view (e.g., slightly left of map center, not attached to head rotation). The component eases ambient/key color and displays a gently floating clue beacon.
+- Create authored hint prefabs at `Assets/Resources/Cues/` matching names in `rounds.json` (`LanternCue`, `ArchCue`, `NordicRoofCue`). Keep cues small, low-poly, static in position, with no required collisions. If a prefab is missing, a simple procedural beacon is used.
+- Use only a slight light color tint per scene. No camera movement, forced rotation, zoom, locomotion, or rapid lighting changes.
+- Import licensed 2:1 equirectangular panoramas at Quest-appropriate resolutions and compress for Android. Do not use street-view imagery unless redistribution/display rights explicitly permit it.
 
-## 3. Make the map read clearly
+## 3. Stronger map loop
 
-- Use `WorldMapGraphic` on the map Image for a lightweight stylized base. Add longitude labels at −180°, −90°, 0°, 90°, 180° and latitude labels at 60°N, 30°N, 0°, 30°S, 60°S. If you have a licensed detailed map texture, it can replace the silhouette.
-- Add a subtle dark map background and visible graticule. Make the guess pin a large lime target (minimum 24–32 reference units), not just a tiny dot. Use a distinct answer pin and connecting line after submission.
-- Attach `MapGuessInput.cs` to the map Image. Assign the manager, map RectTransform, guess pin, answer pin, and connector. Set the map Image's Raycast Target on. Pin and line RectTransforms must be children of the map; set their anchors appropriately and ensure the connector Image is raycastable off.
-- Input uses equirectangular mapping: left/right = −180°/180°, bottom/top = −90°/90°. Keep the map art in the same orientation/projection.
-- Use the Meta XR Interaction SDK's documented hand-ray/UI input sample to drive Unity EventSystem pointer clicks. Configure the EventSystem input module as prescribed by the installed SDK; do not assume desktop mouse input validates hands-free use.
-- Provide an always-visible instruction like “Point at the map, pinch to place your pin.” Make the submit button a separate, large target.
+- Put `WorldMapGraphic` on the map Image. Add coordinate labels at −180°, −90°, 0°, 90°, 180° and 60°N, 30°N, 0°, 30°S, 60°S.
+- Attach `MapGuessInput`; assign the game manager, map RectTransform, preview pin, committed guess pin, answer pin, and connector line. The line must be a child of the map with its Image Raycast Target off.
+- Pointing at the map shows a soft preview pin. Pinch/tap commits or repositions the guess. The separate large Lock In button submits only when a pin is placed.
+- Reveal draws the correct answer marker and connector; each next round clears all markers. Use an equirectangular map graphic so the tap-coordinate mapping matches the artwork.
+- Configure the Meta XR documented hand-ray UI input sample to drive Unity EventSystem pointer movement and clicks. If the chosen module only emits clicks, the preview is optional; the committed guess loop still works.
 
-## 4. Hook the game and UI
+## 4. Wire and test
 
-- Assign `RoundCatalog` and `GeoGuessrGameManager` references in the Inspector.
-- Add `GeoGuessrHUD` and assign all TMP labels, panels, and button references.
-- Assign `MapGuessInput` to the HUD and assign `PanoramaDisplay` so each round loads its own panorama.
-- Assign the start, submit, next, pause/resume, and replay buttons. Keep pause visible during play.
-- Keep the timer at 30 seconds initially; tune only after playtesting. Pause should stop the countdown (the manager's phase-based timer does this).
-- Test that new rounds clear both pins, the reveal shows the answer pin and connector, no answer coordinates are exposed before reveal, and the final screen can replay.
+- Assign `RoundCatalog` and `GeoGuessrGameManager`; place `rounds.json` in `Assets/Resources/` or assign it directly.
+- Assign `GeoGuessrHUD` references for labels, panels, and buttons. Assign the `PanoramaDisplay` and `RoundEnvironmentController`.
+- Ensure the XR UI event system is configured for the Meta XR SDK version in the project.
+- Verify map tap places/repositions guess, Lock In reveals answer, line connects pins, new round clears markers, timeout/reveal and replay work.
+- Test seated without a paired controller on Quest hardware; editor mouse testing alone does not validate hand-first interaction.
 
-## 5. Premium presentation checklist
+## 5. Comfort and performance
 
-- Use a compact 3-step onboarding: LOOK → PIN → REVEAL.
-- Keep one primary action per screen; use large, legible typography and high contrast.
-- Animate panels with a short fade/scale only; avoid persistent motion.
-- Add concise, licensed sound cues for pin placement, reveal, and completion, with an audio mute option if possible.
-- Include pause/resume, clear session exit, and no mandatory tutorial.
-- Verify play from seated position without controller pairing, then verify optional controller fallback.
-
-## 6. Asset and performance notes
-
-Use authored or properly licensed imagery; log source, creator, and license. Never assume a Google Street View or Mapillary image can be redistributed in an APK. Avoid runtime service calls for the judged build. Use texture compression appropriate for Android/Quest, avoid unnecessary real-time shadows, and validate frame rate, loading, text legibility, and hand interaction on hardware.
+Keep controls within comfortable reach, minimize head turns, and let players pause/resume. Use one low-intensity cue light at most and disable its shadows. Use short fades and subtle pin pulse only; no camera shake, flashing, or forced head movement. Record asset licenses and validate frame rate, text legibility, and map selection on device.

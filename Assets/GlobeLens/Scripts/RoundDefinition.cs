@@ -12,6 +12,11 @@ public sealed class GeoRound
     public float longitude;
     // Texture name loaded from Resources/Panoramas (without extension).
     public string panoramaAsset;
+    // Optional prefab name loaded from Resources/Cues (without extension).
+    public string cuePrefab;
+    public string cueCaption;
+    // HTML color string, e.g. #B8E5D0. Empty uses the scene's default ambience.
+    public string ambienceHex;
 }
 
 [Serializable]

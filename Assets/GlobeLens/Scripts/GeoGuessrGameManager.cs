@@ -1,14 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum GeoGamePhase
-{
-    Ready,
-    Playing,
-    Paused,
-    Revealed,
-    Complete
-}
+public enum GeoGamePhase { Ready, Playing, Paused, Revealed, Complete }
 
 public sealed class GeoGameSnapshot
 {
@@ -22,6 +15,9 @@ public sealed class GeoGameSnapshot
     public float guessLongitude;
     public string clue;
     public string panoramaAsset;
+    public string cuePrefab;
+    public string cueCaption;
+    public string ambienceHex;
     public string revealedLocation;
     public float distanceKm;
     public int roundPoints;
@@ -36,7 +32,6 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
 {
     [SerializeField] private RoundCatalog roundCatalog;
     [SerializeField, Min(5f)] private float secondsPerRound = 30f;
-
     public event Action<GeoGameSnapshot> StateChanged;
 
     private GeoRound[] rounds;
@@ -59,18 +54,13 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
             enabled = false;
             return;
         }
-
-        try
-        {
-            rounds = roundCatalog.LoadRounds();
-        }
+        try { rounds = roundCatalog.LoadRounds(); }
         catch (Exception exception)
         {
             Debug.LogException(exception, this);
             enabled = false;
             return;
         }
-
         Publish();
     }
 
@@ -101,9 +91,7 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
     public bool PlaceGuess(float latitude, float longitude)
     {
         if (phase != GeoGamePhase.Playing || float.IsNaN(latitude) || float.IsNaN(longitude) ||
-            latitude < -90f || latitude > 90f || longitude < -180f || longitude > 180f)
-            return false;
-
+            latitude < -90f || latitude > 90f || longitude < -180f || longitude > 180f) return false;
         hasGuess = true;
         guessLatitude = latitude;
         guessLongitude = longitude;
@@ -121,12 +109,7 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
     public void NextRound()
     {
         if (phase != GeoGamePhase.Revealed) return;
-        if (roundIndex + 1 >= rounds.Length)
-        {
-            phase = GeoGamePhase.Complete;
-            Publish();
-            return;
-        }
+        if (roundIndex + 1 >= rounds.Length) { phase = GeoGamePhase.Complete; Publish(); return; }
         roundIndex++;
         BeginRound();
     }
@@ -155,6 +138,9 @@ public sealed class GeoGuessrGameManager : MonoBehaviour
             guessLongitude = guessLongitude,
             clue = round == null ? string.Empty : round.clue,
             panoramaAsset = round == null ? string.Empty : round.panoramaAsset,
+            cuePrefab = round == null ? string.Empty : round.cuePrefab,
+            cueCaption = round == null ? string.Empty : round.cueCaption,
+            ambienceHex = round == null ? string.Empty : round.ambienceHex,
             revealedLocation = reveal && round != null ? round.name + ", " + round.country : string.Empty,
             distanceKm = distanceKm,
             roundPoints = roundPoints,

@@ -13,8 +13,8 @@
 
 1. Start a short session from a premium, uncluttered start screen.
 2. Look around an immersive, locally bundled destination panorama and read the clue.
-3. Point at the large in-world world map and pinch/tap to place a guess.
-4. Submit before the 30-second timer ends.
+3. Point at the large in-world world map; a preview pin tracks aim. Pinch/tap to place or reposition it.
+4. Lock in the guess separately before the 30-second timer ends.
 5. See the revealed answer pin, distance line, and score; continue or replay.
 
 The game works offline once assets are imported. It does not require GPS, an account, or live street-view APIs.
@@ -31,8 +31,11 @@ Assets/GlobeLens/
     ├── PanoramaDisplay.cs
     ├── RoundCatalog.cs
     ├── RoundDefinition.cs
+    ├── RoundEnvironmentController.cs
     └── WorldMapGraphic.cs
-docs/PREMIUM_SCENE_SETUP.md
+docs/
+├── ADVANCED_3D_AND_MAP_LOOP.md
+└── PREMIUM_SCENE_SETUP.md
 devpost/
 ├── DEMO_SCRIPT.md
 ├── PLAN.md
@@ -42,11 +45,11 @@ devpost/
 
 ## Create and run the Unity project
 
-1. Install the Unity version and Meta XR SDK version required by the event. Use Meta's current official Unity setup instructions rather than assuming a package version.
+1. Install the Unity version and Meta XR SDK version required by the event. Use Meta's current official Unity setup instructions.
 2. Create a Unity project and configure Android/Quest build support and Meta XR/OpenXR settings per that SDK's setup guide.
 3. Copy `Assets/GlobeLens` into the Unity project's `Assets` folder.
 4. Follow [the premium scene setup guide](docs/PREMIUM_SCENE_SETUP.md) to create the seated XR scene, world-space UI, map, pins, and hand-ray UI input.
-5. Import properly licensed 2:1 panoramas into `Assets/Resources/Panoramas/`, matching the names in `rounds.json`.
+5. Import properly licensed panoramas into `Assets/Resources/Panoramas/` and optional hint prefabs into `Assets/Resources/Cues/`, matching names in `rounds.json`.
 6. Assign scene references in the Inspector, enter Play mode, then validate hand-first interaction on a Quest device or supported simulator.
 7. Build and upload the APK using the event's required Meta VR Developer Dashboard release channel, create an Invite URL, and keep the build accessible for judging.
 
@@ -54,8 +57,8 @@ The scripts provide gameplay and UI hooks; they do not automatically generate a 
 
 ## Visual direction and assets
 
-Premium evergreen/celadon palette, warm high-contrast type, a calm panorama dome, a crisp graticule map, oversized guess pin, distinct answer pin, and a connecting result line. Use original or properly licensed panoramas and sounds. The sample round file references texture names; it does not bundle images. The map is a stylized generated graphic and does not use external tiles.
+Premium evergreen/celadon palette, warm high-contrast type, a calm panorama dome, subtle per-destination ambient tint, locally bundled 3D clue props, and a crisp graticule map with preview, guess, and answer pins. Use original or properly licensed panoramas and sounds. The sample round file references texture/prefab names; it does not bundle assets.
 
 ## Submission package
 
-See `devpost/SUBMISSION.md` for a draft name, tagline, track/division guidance, and description; `devpost/DEMO_SCRIPT.md` for a sub-3-minute recording plan; `devpost/SUBMISSION_CHECKLIST.md` for build/upload requirements; and `docs/PREMIUM_SCENE_SETUP.md` for scene assembly and interaction setup.
+See `devpost/SUBMISSION.md` for the draft submission, `devpost/DEMO_SCRIPT.md` for a sub-3-minute recording plan, `devpost/SUBMISSION_CHECKLIST.md` for build/upload requirements, and `docs/ADVANCED_3D_AND_MAP_LOOP.md` for the added interaction and visual polish.
